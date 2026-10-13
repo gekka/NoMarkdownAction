@@ -3,6 +3,14 @@ name: Clean Markdown in Issue Body
 on:
   issues:
     types: [opened, edited]
+  issue_comment:
+    types: [created, edited]
+  pull_request:
+    types: [opened, edited]
+#   discussion:
+#     types: [created, edited]
+#   discussion_comment:
+#     types: [created, deleted]
 
 permissions:
   issues: write
@@ -81,16 +89,14 @@ jobs:
                   }
               }
 
-              async function replaceBody() {
-                  const issue = context.payload.issue;
-                  const originalText = issue.body || '';
-
+              async function replaceIssueBody() {
+                  const originalText = context.payload.issue.body || '';
                   if (originalText.length == 0) {
                       return;
                   }
                   const result = work(originalText, false);
                   if (result.hasChange) {
-                      // 本文そのものを書き換える（更新する）
+                      // Issueを書き換える
                       await github.rest.issues.update({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
@@ -100,4 +106,22 @@ jobs:
                   }
               }
 
-              await replaceBody();
+              async function replaceIssueCommentBody() {
+              }
+              async function replacePullRequestBody() {
+              }
+
+              const eventName = context.eventName;
+
+              console.log(`Triggered by event: ${eventName}`);
+              console.log(`payload: ${JSON.stringify(context.payload,null,2)}`);
+
+              if(eventName == 'issues'){
+                await replaceIssueBody();
+              }
+              else if(eventName == 'issue_comment'){
+                await replaceIssueCommentBody();
+              }
+              else if(eventName == 'pull_request'){
+                await replacePullRequestBody();
+              }              
