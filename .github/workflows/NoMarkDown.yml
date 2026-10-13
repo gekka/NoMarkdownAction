@@ -113,16 +113,18 @@ jobs:
                   }
                   const result = work(originalText, false);
                   if (result.hasChange) {
-                #       // Issueを書き換える
-                #       await github.rest._comment.update({
-                #           owner: context.repo.owner,
-                #           repo: context.repo.repo,
-                #           issue_number: issue.number,
-                #           body: result.text
-                #       });
+
                   }              
               }
               async function replacePullRequestBody() {
+                  const originalText = "";//context.payload.comment.body || '';
+                  if (originalText.length == 0) {
+                      return;
+                  }
+                  const result = work(originalText, false);      
+                  if (result.hasChange) {
+
+                  }                            
               }
 
               const eventName = context.eventName;
