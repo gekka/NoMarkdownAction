@@ -23,105 +23,118 @@ jobs:
           uses: actions/github-script@v9
           with:
             script: |
-              function work(originalText, isInCell) {
-                  const lines = originalText.split('\n');
+                function work(originalText, isInCell) {
+                    originalText = originalText ?? "";
+                    if (originalText.trim().length == 0) {
+                        return {
+                            text: originalText,
+                            hasChange: false
+                        }
+                    }
 
-                  let isInCodeBlock = false;
-                  let hasChange = false;
-                  const processedLines = lines.map(originalLine => {
-                      const trimmed = originalLine.trim();
+                    const lines = originalText.split('\n');
 
-                      if (!isInCell) {
-                          if (/^\s*```/g.test(originalLine)) {
-                              isInCodeBlock = !isInCodeBlock;
-                          }
+                    let isInCodeBlock = false;
+                    let hasChange = false;
+                    const processedLines = lines.map(originalLine => {
+                        const trimmed = originalLine.trim();
 
-                          if (isInCodeBlock) {
-                              return originalLine;
-                          }
-                      }
+                        if (!isInCell) {
+                            if (/^\s*```/g.test(originalLine)) {
+                                isInCodeBlock = !isInCodeBlock;
+                            }
 
-                      let cleanLine = originalLine;
+                            if (isInCodeBlock) {
+                                return originalLine;
+                            }
+                        }
 
-                      if (trimmed.startsWith("|") && trimmed.endsWith("|") && trimmed.length >= 2) {
-                          // セルの中身を個別に処理
-                          const cells = trimmed.split("|").map(cell => work(cell, true))
-                          if (cells.some(c => c.hasChange)) {
-                              cleanLine = cells.map(_ => _.text).join("|");
-                              hasChange = true;
-                          }
-                      }
-                      else {
-                          // インラインコードの削除 `code` -> code
-                          cleanLine = cleanLine.replace(/`([^`]+)`/g, '$1')
+                        let cleanLine = originalLine;
 
-                          // 太字・イタリックの削除 (**text**, *text*, __text__, _text_)
-                          cleanLine = cleanLine.replace(/(\*{1,3}|_{1,3})(.*?)\1/g, '$2')
+                        if (trimmed.startsWith("|") && trimmed.endsWith("|") && trimmed.length >= 2) {
+                            // セルの中身を個別に処理
+                            const cells = trimmed.split("|").map(cell => work(cell, true))
+                            if (cells.some(c => c.hasChange)) {
+                                cleanLine = cells.map(_ => _.text).join("|");
+                                hasChange = true;
+                            }
+                        }
+                        else {
+                            // インラインコードの削除 `code` -> code
+                            cleanLine = cleanLine.replace(/`([^`]+)`/g, '$1')
 
-                          //リンクを行全体に拡張
-                          let url = "";
-                          cleanLine = cleanLine.replace(/\[([^\]]+)\]\((.*)\)/g, (match, linkText, u) => {
-                              if (u != "") {
-                                  url = u;
-                              }
-                              return `${linkText}`;
-                          });
-                          if (url != "") {
-                              const markdownRegex = /^(\s*(?:#{1,6}|>+|\*|\-|\+|\d+\.|- [[ xX]])\s+)(.*)$/;
-                              const match = cleanLine.match(markdownRegex);
-                              if (match) {
-                                  cleanLine = `${match[1]}[${match[2]}](${url})`;
-                              }
-                              else {
-                                  cleanLine = `[${cleanLine}](${url})`;
-                              }
-                          }
+                            // 太字・イタリックの削除 (**text**, *text*, __text__, _text_)
+                            cleanLine = cleanLine.replace(/(\*{1,3}|_{1,3})(.*?)\1/g, '$2')
 
-                          hasChange |= (cleanLine != originalLine);
-                      }
+                            //リンクを行全体に拡張
+                            let url = "";
+                            cleanLine = cleanLine.replace(/\[([^\]]+)\]\((.*)\)/g, (match, linkText, u) => {
+                                if (u != "") {
+                                    url = u;
+                                }
+                                return `${linkText}`;
+                            });
+                            if (url != "") {
+                                const markdownRegex = /^(\s*(?:#{1,6}|>+|\*|\-|\+|\d+\.|- [[ xX]])\s+)(.*)$/;
+                                const match = cleanLine.match(markdownRegex);
+                                if (match) {
+                                    cleanLine = `${match[1]}[${match[2]}](${url})`;
+                                }
+                                else {
+                                    cleanLine = `[${cleanLine}](${url})`;
+                                }
+                            }
 
-                      return cleanLine;
-                  });
+                            hasChange |= (cleanLine != originalLine);
+                        }
 
-                  return {
-                      text: (hasChange ? processedLines.join('\n') : originalText),
-                      hasChange: hasChange
-                  }
-              }
+                        return cleanLine;
+                    });
 
-              async function replaceIssueBody() {
-                  const originalText = context.payload.issue.body || '';
-                  if (originalText.length == 0) {
-                      return;
-                  }
-                  const result = work(originalText, false);
-                  if (result.hasChange) {
-                      // Issueを書き換える
-                      await github.rest.issues.update({
-                          owner: context.repo.owner,
-                          repo: context.repo.repo,
-                          issue_number: issue.number,
-                          body: result.text
-                      });
-                  }
-              }
+                    return {
+                        text: (hasChange ? processedLines.join('\n') : originalText),
+                        hasChange: hasChange
+                    }
+                }
 
-              async function replaceIssueCommentBody() {
-              }
-              async function replacePullRequestBody() {
-              }
+                async function replaceIssueOrPullrequestBody(body,number) {
+                    const result = work(body, false);
+                    if (result.hasChange) {
+                        // IssueまたはPullrequestを書き換える
+                        await github.rest.issues.update({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: number,
+                            body: result.text
+                        });
+                    }
+                }
 
-              const eventName = context.eventName;
+                async function replaceIssueCommentBody() {
+                    const result = work(context.payload.comment.body, false);
+                    if (result.hasChange) {
+                        // IssueまたはPullrequestのコメントを書き換え
+                        await github.rest.issues.updateComment({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            comment_id: context.payload.comment.id,
+                            body: result.text
+                        });
+                    }
+                }
 
-              console.log(`Triggered by event: ${eventName}`);
-              console.log(`payload: ${JSON.stringify(context.payload,null,2)}`);
+                const eventName = context.eventName;
+                console.log(`Triggered by event: ${eventName}`);
+                console.log(`payload: ${JSON.stringify(context, null, 2)}`);
 
-              if(eventName == 'issues'){
-                await replaceIssueBody();
-              }
-              else if(eventName == 'issue_comment'){
-                await replaceIssueCommentBody();
-              }
-              else if(eventName == 'pull_request'){
-                await replacePullRequestBody();
-              }              
+                if (eventName == 'issues') {
+                    await replaceIssueOrPullrequestBody(context.payload.issues.body, context.payload.issues.number)
+                }
+                else if (eventName == 'pull_request') {
+                    await replaceIssueOrPullrequestBody(context.payload.pull_request.body, context.payload.pull_request.number)
+                }
+                else if (eventName == 'issue_comment') {
+                    await replaceIssueCommentBody();
+                }
+
+           
