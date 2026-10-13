@@ -128,7 +128,7 @@ jobs:
                 console.log(`payload: ${JSON.stringify(context, null, 2)}`);
 
                 if (eventName == 'issues') {
-                    await replaceIssueOrPullrequestBody(context.payload.issue.body, context.payload.issue.number)
+                    await replaceIssueOrPullrequestBody(context.payload.issues.body, context.payload.issues.number)
                 }
                 else if (eventName == 'pull_request') {
                     await replaceIssueOrPullrequestBody(context.payload.pull_request.body, context.payload.pull_request.number)
