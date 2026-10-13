@@ -97,14 +97,27 @@ jobs:
                     }
                 }
 
-                async function replaceIssueOrPullrequestBody(body,number) {
-                    const result = work(body, false);
+                async function replaceIssueBody() {
+                    const result = work(context.payload.issue.body, false);
                     if (result.hasChange) {
-                        // IssueまたはPullrequestを書き換える
+                        // Issueを書き換える
                         await github.rest.issues.update({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            issue_number: number,
+                            issue_number: context.payload.issue.number,
+                            body: result.text
+                        });
+                    }
+                }
+                
+                async function replacePullrequestBody() {
+                    const result = work(context.payload.pull_request.body, false);
+                    if (result.hasChange) {
+                        // Pullrequestを書き換える
+                        await github.rest.pulls.update({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: context.payload.pull_request.number,
                             body: result.text
                         });
                     }
@@ -128,10 +141,10 @@ jobs:
                 console.log(`payload: ${JSON.stringify(context, null, 2)}`);
 
                 if (eventName == 'issues') {
-                    await replaceIssueOrPullrequestBody(context.payload.issue.body, context.payload.issue.number)
+                    await replaceIssueBody()
                 }
                 else if (eventName == 'pull_request') {
-                    await replaceIssueOrPullrequestBody(context.payload.pull_request.body, context.payload.pull_request.number)
+                    await replacePullrequestBody()
                 }
                 else if (eventName == 'issue_comment') {
                     await replaceIssueCommentBody();
