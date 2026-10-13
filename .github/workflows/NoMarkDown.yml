@@ -107,6 +107,20 @@ jobs:
               }
 
               async function replaceIssueCommentBody() {
+                  const originalText = context.payload.comment.body || '';
+                  if (originalText.length == 0) {
+                      return;
+                  }
+                  const result = work(originalText, false);
+                  if (result.hasChange) {
+                #       // Issueを書き換える
+                #       await github.rest._comment.update({
+                #           owner: context.repo.owner,
+                #           repo: context.repo.repo,
+                #           issue_number: issue.number,
+                #           body: result.text
+                #       });
+                  }              
               }
               async function replacePullRequestBody() {
               }
@@ -114,7 +128,7 @@ jobs:
               const eventName = context.eventName;
 
               console.log(`Triggered by event: ${eventName}`);
-              console.log(`payload: ${JSON.stringify(context.payload,null,2)}`);
+              console.log(`payload: ${JSON.stringify(context,null,2)}`);
 
               if(eventName == 'issues'){
                 await replaceIssueBody();
