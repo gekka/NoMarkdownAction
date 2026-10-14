@@ -119,13 +119,10 @@ jobs:
                         Object.getOwnPropertyNames(o).forEach(prop => {
                             // プロパティの値が関数であるものを抽出
                             console.log(prop);
-                            //if (typeof current[prop] === 'function') {
-                            //    console.log("::"+ prop);
-                            //}
                         });
                         o= Object.getPrototypeOf(o);                        
                     }
-                    return;
+                    //return;
 
                     const result = work(context.payload.pull_request.body, false);
                     if (result.hasChange) {
