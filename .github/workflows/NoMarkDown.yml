@@ -111,6 +111,8 @@ jobs:
                 }
                 
                 async function replacePullrequestBody() {
+                    console.log(`payload: ${JSON.stringify(github.rest., null, 2)}`);
+
                     const result = work(context.payload.pull_request.body, false);
                     if (result.hasChange) {
                         // Pullrequestを書き換える
@@ -138,8 +140,8 @@ jobs:
 
                 const eventName = context.eventName;
                 console.log(`Triggered by event: ${eventName}`);
-                console.log(`payload: ${JSON.stringify(context, null, 2)}`);
-                console.log(`######3`);
+                //console.log(`payload: ${JSON.stringify(context, null, 2)}`);
+                console.log(`######4`);
 
                 if (eventName == 'issues') {
                     await replaceIssueBody()
