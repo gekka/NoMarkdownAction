@@ -139,13 +139,13 @@ jobs:
                 const eventName = context.eventName;
                 console.log(`Triggered by event: ${eventName}`);
                 console.log(`payload: ${JSON.stringify(context, null, 2)}`);
-                console.log(`######1`);
+                console.log(`######3`);
 
                 if (eventName == 'issues') {
                     await replaceIssueBody()
                 }
                 else if (eventName == 'pull_request') {
-                    //await replacePullrequestBody()
+                    await replacePullrequestBody()
                 }
                 else if (eventName == 'issue_comment') {
                     await replaceIssueCommentBody();
