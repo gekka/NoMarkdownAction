@@ -113,12 +113,16 @@ jobs:
                 async function replacePullrequestBody() {
                     console.log(`@@github.rest`);
                     console.log(`payload: ${JSON.stringify(github.rest, null, 2)}`);
-                     console.log(`@@github.rest.pulls`);
-                    console.log(`payload: ${JSON.stringify(github.rest.pulls, null, 2)}`);
-                    if(github.rest.pulls.update){
-                        console.log("OK");
-                    } else {
-                        console.log("NG");
+                    console.log(`@@github.rest.pulls`);
+                    let o = github.rest.pulls;
+                    while(o  && o != Object.prototype){
+                        Object.getOwnPropertyNames(o).forEach(prop => {
+                            // プロパティの値が関数であるものを抽出
+                            if (typeof current[prop] === 'function') {
+                                console.log("::"+ prop);
+                            }
+                        });
+                        o= Object.getPrototypeOf(o);                        
                     }
                     return;
 
