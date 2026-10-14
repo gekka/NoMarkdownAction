@@ -143,7 +143,7 @@ jobs:
                 const eventName = context.eventName;
                 console.log(`Triggered by event: ${eventName}`);
                 console.log(`payload: ${JSON.stringify(context.payload, null, 2)}`);
-                console.log(`###### 20261014 1150`);
+                console.log(`###### 20261014 1201`);
 
                 if (eventName == 'issues') {
                     await replaceIssueBody()
@@ -152,6 +152,10 @@ jobs:
                     await replacePullrequestBody()
                 }
                 else if (eventName == 'issue_comment') {
+                    if(context.payload.comment.html_url?.includes("/pull/") == true)
+                    {
+                        return;
+                    }
                     await replaceIssueCommentBody();
                 }
 
