@@ -115,6 +115,11 @@ jobs:
                     console.log(`payload: ${JSON.stringify(github.rest, null, 2)}`);
                      console.log(`@@github.rest.pulls`);
                     console.log(`payload: ${JSON.stringify(github.rest.pulls, null, 2)}`);
+                    if(github.rest.pulls.update){
+                        console.log("OK");
+                    } else {
+                        console.log("NG");
+                    }
                     return;
 
                     const result = work(context.payload.pull_request.body, false);
