@@ -5,8 +5,8 @@ on:
     types: [opened, edited]
   issue_comment:
     types: [created, edited]
-  pull_request:
-    types: [opened, edited]
+#   pull_request:
+#     types: [opened, edited]
 #   discussion:
 #     types: [created, edited]
 #   discussion_comment:
@@ -111,22 +111,13 @@ jobs:
                 }
                 
                 async function replacePullrequestBody() {
-                    console.log(`@@github.rest`);
-                    console.log(`payload: ${JSON.stringify(github.rest, null, 2)}`);
-                    console.log(`@@github.rest.pulls`);
-                    let o = github.rest.pulls;
-                    while(o  && o != Object.prototype){
-                        Object.getOwnPropertyNames(o).forEach(prop => {
-                            // プロパティの値が関数であるものを抽出
-                            console.log(prop);
-                        });
-                        o= Object.getPrototypeOf(o);                        
-                    }
-                    //return;
+                    
+                    return;
 
                     const result = work(context.payload.pull_request.body, false);
                     if (result.hasChange) {
                         // Pullrequestを書き換える
+                        //権限がないようで、403
                         await github.rest.pulls.update({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
@@ -151,7 +142,7 @@ jobs:
 
                 const eventName = context.eventName;
                 console.log(`Triggered by event: ${eventName}`);
-                //console.log(`payload: ${JSON.stringify(context, null, 2)}`);
+                console.log(`payload: ${JSON.stringify(context.payload., null, 2)}`);
                 console.log(`######4`);
 
                 if (eventName == 'issues') {
