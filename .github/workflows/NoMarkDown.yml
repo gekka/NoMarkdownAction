@@ -111,7 +111,7 @@ jobs:
                 }
                 
                 async function replacePullrequestBody() {
-                    console.log(`payload: ${JSON.stringify(github.rest., null, 2)}`);
+                    console.log(`payload: ${JSON.stringify(github.rest, null, 2)}`);
 
                     const result = work(context.payload.pull_request.body, false);
                     if (result.hasChange) {
