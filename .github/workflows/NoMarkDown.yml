@@ -142,13 +142,13 @@ jobs:
                 console.log(`######1`);
 
                 if (eventName == 'issues') {
-                    //await replaceIssueBody()
+                    await replaceIssueBody()
                 }
                 else if (eventName == 'pull_request') {
                     //await replacePullrequestBody()
                 }
                 else if (eventName == 'issue_comment') {
-                    //await replaceIssueCommentBody();
+                    await replaceIssueCommentBody();
                 }
 
            
