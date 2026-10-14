@@ -111,7 +111,11 @@ jobs:
                 }
                 
                 async function replacePullrequestBody() {
+                    console.log(`@@github.rest`);
                     console.log(`payload: ${JSON.stringify(github.rest, null, 2)}`);
+                     console.log(`@@github.rest.pulls`);
+                    console.log(`payload: ${JSON.stringify(github.rest.pulls, null, 2)}`);
+                    return;
 
                     const result = work(context.payload.pull_request.body, false);
                     if (result.hasChange) {
@@ -119,7 +123,7 @@ jobs:
                         await github.rest.pulls.update({
                             owner: context.repo.owner,
                             repo: context.repo.repo,
-                            issue_number: context.payload.pull_request.number,
+                            pull_number: context.payload.pull_request.number,
                             body: result.text
                         });
                     }
